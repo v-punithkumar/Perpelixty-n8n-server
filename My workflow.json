@@ -30,7 +30,7 @@
           "parameters": [
             {
               "name": "Authorization ",
-              "value": "Bearer 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"
+              "value": "Bearer pplx-"
             }
           ]
         },
@@ -57,7 +57,7 @@
           "parameters": [
             {
               "name": "Authorization ",
-              "value": "Bearer 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"
+              "value": "Bearer pplx-"
             }
           ]
         },
