@@ -4,7 +4,11 @@ A Flask-based server that automates image generation using Perplexity AI's inter
 
 ## Demo
 Watch the demo video to see the server in action:
-[Watch Demo Video](https://cdn.githubraw.com/v-punithkumar/Perpelixty-n8n-server/main/perplexity%20server.mp4)
+
+<video width="100%" autoplay loop muted>
+  <source src="https://cdn.githubraw.com/v-punithkumar/Perpelixty-n8n-server/main/perplexity%20server.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Features
 
