@@ -1,0 +1,5 @@
+nest_asyncio
+flask
+dotenv
+requests
+playwright

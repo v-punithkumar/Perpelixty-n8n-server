@@ -1,0 +1,614 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 2,
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1744,
+        1072
+      ],
+      "id": "ce49439c-f1f2-4a45-81e2-3f00f056c004",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization ",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"sonar-pro\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Be precise and concise.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Find me five stories related to new discoveries in artificial intelligence from today or yesterday. The stories have to be interesting in general and not only to tech nerds. Label them 1 through 5\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1472,
+        1072
+      ],
+      "id": "896e2517-9294-44c7-b300-7e6414848bd7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization ",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"sonar-pro\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Be precise and concise.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Find me 5 new, interesting and relevant stories related to problems caused through artificial intelligence. Do not look for technical problems but for problems in society, jobs and relationships\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1472,
+        1376
+      ],
+      "id": "869ee580-d40a-4b66-951d-e31efe4514ce",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const choice = item.json?.choices?.[0];\n\n  const message = choice?.message?.content || \"No message content found\";\n\n  return {\n    json: {\n      index: choice?.index ?? null,\n      role: choice?.message?.role ?? null,\n      finish_reason: choice?.finish_reason ?? null,\n      content: message,\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        1072
+      ],
+      "id": "11f85068-6b77-4bc9-b6a3-97554cef948c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const choice = item.json?.choices?.[0];\n\n  const message = choice?.message?.content || \"No message content found\";\n\n  return {\n    json: {\n      index: choice?.index ?? null,\n      role: choice?.message?.role ?? null,\n      finish_reason: choice?.finish_reason ?? null,\n      content: message,\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        1376
+      ],
+      "id": "39908316-5684-4183-a15d-08d7303c63dc",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -960,
+        1088
+      ],
+      "id": "fd3c2886-2f12-4a64-90b0-1d243fae967f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const combinedContent = items\n  .map(item => item.json.content)\n  .join('\\n\\n');\n\n\nreturn [{\n  json: {\n    combinedContent\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        1088
+      ],
+      "id": "9271c6a7-28fa-4a8c-893b-8352d6ed45f3",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "promptType": "=define",
+        "text": "=Use that content to write a perfect LinkedIn Post: {{ $json.combinedContent }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "#Role: You are an expert for social media and LinkedIn and you know how to identify AI topics for perfect LinkedIn Posts. You select the topics for a Person posting about interesting and sometimes controversial AI topics on LinkedIn.\n\n#Task: Your task is to look at the topics provided and to identify which topic is the best to create a LinkedIn post about.\n\nMake sure to also check the google sheet containing already created posts of the past to avoid creating too similar posts in a row. The goal is to always talk about different topics.\n\nOnce you identified the topic, you write a perfect LinkedIn post about it.\n\nAdditionally you write a suitable image prompt so that the post can be posted together with an image that perfectly underlines the post idea.\n\n#Output format:\n\nYou always output two things:\n\nThe LinkedIn post in text form\nThe image prompt to create a suitable image.\n\n#Tools:\nYou have one tool\n\n#Tool1: A google sheet tool that allows you to check out the last posts you created to avoid repetition"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        1088
+      ],
+      "id": "744c7478-74f1-429d-bc9f-aa0b6539df46",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "person": "7vtludZYyV",
+        "text": "={{ $json.data.message }}",
+        "shareMediaCategory": "IMAGE",
+        "binaryPropertyName": "=data",
+        "additionalFields": {
+          "title": "={{ $json.data.title }}",
+          "visibility": "PUBLIC"
+        }
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        1088
+      ],
+      "id": "d19f6c51-6e4f-4480-9ad0-4ee6d7891758",
+      "name": "LinkedIn",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "3QLK9Pko3XSMyqQD",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        1392
+      ],
+      "id": "83bfbc58-6259-48ff-aeef-691d31ed4bd2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yNKfESgggfUWTqM3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "linkdien_post"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        1424
+      ],
+      "id": "208a8ed5-eafb-4812-a79c-6d950aa3481e",
+      "name": "Get many rows in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "HSu663xoiVvsymIM",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Your task is to look at the input provided here:\n\n{{ $json.output }}\n\nand to only seperate the LinkedIn post from the image prompt. Output ONLY the LinkedIn Post and the Image prompt, nothing else.\n\nAlways call the two json elements: \"LinkedInPost\" and \"ImagePrompt\"\n\nYou also store the LinkedInPost and the ImagePrompt in a google sheet with the tool that is provided to you."
+            }
+          ]
+        },
+        "jsonOutput": "={{ true }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        32,
+        1088
+      ],
+      "id": "282c2938-8bb5-49a2-82c5-336b290e6971",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yNKfESgggfUWTqM3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/image-only",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Text",
+              "value": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        896
+      ],
+      "id": "32bcda69-9f7a-4506-ac90-dee800270e2a",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "content": "# LinkedIn Posts with Perplexity Sonar Content & Custom Images\n\n## Before You Get Started\n\nYou'll need the following:\n\n- **n8n Instance**  \n  A running n8n instance (cloud or self-hosted) to import and execute the workflow.\n\n- **Perplexity Account**  \n  For fetching the latest news and generating post topics using the Sonar model (requires a Perplexity API Key).\n\n- **Custom Image Generation Server**  \n  Access to your self-hosted Flask server, which uses Playwright to automate image creation on Perplexity's website.\n\n- **Your LinkedIn Account**  \n  For publishing the generated posts (requires LinkedIn OAuth Credentials for n8n connection).\n",
+        "height": 548,
+        "width": 584,
+        "color": 4
+      },
+      "id": "24fb136b-f2c5-471b-8166-94ae131fb0fd",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1728,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Generate a LinkedIn Post from AI News Content\n\n### Combined Content Input\nThis node receives a collection of AI-related news stories and articles from the previous steps. This combined text serves as the source material for the new post.\n\n### AI-Powered Content Generation\nUsing the compiled news content, the node drafts a compelling and relevant LinkedIn post. The prompt specifically instructs the AI to synthesize the provided stories into a high-quality, engaging post suitable for a professional audience.\n\n### Output for Next Steps\nThe final generated LinkedIn post, along with a corresponding image prompt, is then passed on to the subsequent nodes in the workflow for image creation and final publishing.\n",
+        "height": 396,
+        "width": 700,
+        "color": 6
+      },
+      "id": "4576674d-f04a-4d77-8a5f-32549bc24b3b",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Custom Image Generation\n\n### Image Prompt Input\nThe image prompt, created in the previous step, is sent to your custom Flask server via an HTTP Request.\n\n### Automated Image Creation\nYour server takes this prompt and uses **Playwright** to automate the **Brave browser**. It navigates to [Perplexity.ai](https://www.perplexity.ai) and generates a unique image based on the prompt.\n\n### Image Retrieval and Return\nOnce the image is created, the server downloads it and sends the final image data back to the **n8n workflow**, making it available for the final LinkedIn post.\n",
+        "height": 856,
+        "width": 704
+      },
+      "id": "f913e859-e0d8-463e-995c-db5d1abb02ca",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Connect Your LinkedIn\n-----------------------------------------------------------\n\n\n1.  Connect your LinkedIn by double clicking on LinkedIn Icon below. \n\n2. Set up and apply OAuth credentials to the “Create a post” node for your LinkedIn account.\n\n3. All the outputs from the previous nodes will be merged here, and will automatically publish a post. \n \n\n",
+        "height": 460,
+        "width": 680,
+        "color": 4
+      },
+      "id": "630a56ca-bbfd-4d8f-9201-61fad81a4c50",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5000/split-linkedin",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Text",
+              "value": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        1232
+      ],
+      "id": "f2fbdcda-d4d4-42ca-9672-eef726ddf12b",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1008,
+        1088
+      ],
+      "id": "e96c1413-5c13-4b3d-a51f-eb37e1369876",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "tableId": "linkdien_post",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Post_message",
+              "fieldValue": "={{ $('Message a model').item.json.content.parts[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        1424
+      ],
+      "id": "44fd8cfb-1ee0-42b8-9ace-b8fdc186efc3",
+      "name": "Create a row in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "HSu663xoiVvsymIM",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows in Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row in Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "Message a model",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "93c4f66b-b375-4349-be89-66e2f9791811",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b48f90baae4cc0ec6dabb3606998211d486e209fdf66e59e902546b165959b60"
+  },
+  "id": "P73tV7ZQgMCHFSzB",
+  "tags": []
+}
