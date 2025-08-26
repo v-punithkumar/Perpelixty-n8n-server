@@ -2,6 +2,10 @@
 
 A Flask-based server that automates image generation using Perplexity AI's interface through Playwright. This server is designed to work with n8n workflows for LinkedIn post automation.
 
+## Demo
+Watch the demo video to see the server in action:
+[Watch Demo Video](https://cdn.githubraw.com/v-punithkumar/Perpelixty-n8n-server/main/perplexity%20server.mp4)
+
 ## Features
 
 - Generate AI images using Perplexity's interface
